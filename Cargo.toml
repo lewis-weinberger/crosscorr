@@ -1,0 +1,8 @@
+[package]
+name = "crosscorr"
+version = "0.1.0"
+authors = ["Lewis Weinberger <lhw28@cam.ac.uk>"]
+edition = "2018"
+
+[dependencies]
+fftw = "0.6.0"
