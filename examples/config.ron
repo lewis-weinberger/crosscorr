@@ -1,0 +1,7 @@
+(
+    grid1_filename: "/path/to/grid1",
+    grid2_filename: "/path/to/grid2",
+    output_filename: "/path/to/output",
+    ngrid: 2048,
+    boxsize: 160,
+)
