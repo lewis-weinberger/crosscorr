@@ -157,6 +157,10 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
         grid[i] = c64::new(cell, 0.0);
     }
     println!("Successfully read {} cells!", ngrid3);
+    println!("Sanity print:");
+    for i in 0..5 {
+        println!("grid1[{}] = {} + i{}", i, grid[i].re, grid[i].im);
+    }
 
     Ok(grid)
 }
@@ -208,18 +212,14 @@ pub fn correlate(config: &Config, mut grid1: AlignedVec<c64>, mut grid2: Aligned
 
     let mut w: Vec<f64> = Vec::with_capacity(ngrid);
     for i in 0..nhalf {
-        w[i] = kf * (i as f64);
+        w.push(kf * (i as f64));
     }
     for i in nhalf..ngrid {
-        w[i] = kf * ((i - ngrid) as f64);
+        w.push(kf * ((i - ngrid) as f64));
     }
 
-    let mut pow_spec: Vec<f64> = Vec::with_capacity(ngrid);
-    let mut iweights: Vec<i64> = Vec::with_capacity(ngrid);
-    for n in 0..ngrid {
-        pow_spec[n] = 0.0;
-        iweights[n] = 0;
-    }
+    let mut pow_spec: Vec<f64> = vec![0.0; ngrid];
+    let mut iweights: Vec<i64> = vec![0; ngrid];
     
     for i in 0..ngrid {
         let iper = if i > nhalf { ngrid - i } else { i };
@@ -250,7 +250,7 @@ pub fn correlate(config: &Config, mut grid1: AlignedVec<c64>, mut grid2: Aligned
     for i in 0..nhalf {
         pow_spec[i] *= boxsize.powf(3.0) / (ngrid as f64).powf(6.0);
         pow_spec[i] /= iweights[i] as f64;
-        deltasqk[i] = w[i].powf(3.0) * pow_spec[i] / pisq;
+        deltasqk.push(w[i].powf(3.0) * pow_spec[i] / pisq);
     }
 
     // Return final output
