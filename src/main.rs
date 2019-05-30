@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 use crosscorr;
-use crosscorr::{Config, load_grid, correlate, save_result};
+use crosscorr::{Config, Output, load_grid, correlate};
 
 fn main() {
 
@@ -13,20 +13,27 @@ fn main() {
     });
 
     // Load first grid
-    let mut grid1 = load_grid(&config.grid1_filename, config.ngrid).unwrap_or_else(|err| {
+    let grid1 = load_grid(&config, 1).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
         process::exit(1);
     });
 
     // Load second grid
-    let mut grid2 = load_grid(&config.grid2_filename, config.ngrid).unwrap_or_else(|err| {
+    let grid2 = load_grid(&config, 2).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
         process::exit(1);
     });
 
     // Calculate power spectrum
-    correlate();
+    let output: Output = correlate(&config, grid1, grid2).unwrap_or_else(|err| {
+        eprintln!("Error: {}", err);
+        process::exit(1);
+    });
     
     // Save power spectrum to output file
-    save_result();
+    output.save_result(&config).unwrap_or_else(|err| {
+        eprintln!("Error: {}", err);
+        process::exit(1);
+    });
+
 }
