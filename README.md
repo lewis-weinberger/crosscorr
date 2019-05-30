@@ -11,7 +11,9 @@ fields (or, if the fields are the same, the auto-power spectrum). Credit to
 Requires an installation of [Rust](https://www.rust-lang.org/tools/install), and 
 the fftw crate requires a C compiler and `make` to compile the underlying source
 for the library. With those prerequisites, installation should be as simple as
-cloning the repository and using `cargo build`.
+cloning the repository and using `cargo build --release`. Note compiling the 
+`release` version will take longer but provides considerable optimisation which
+speeds up the code dramatically (in particular the file IO).
 
 ##### Usage
 The executable reads in the configuration from a 
@@ -50,6 +52,6 @@ will generate both the data and the configuration file so that the `crosscorr`
 code can be tested. Also provided is a plotting script `plot.py`, which will
 generate the following output for this mock data:
 
-![Plot 1](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_1.png)
+![Plot 1](/examples/crosscorr_1.png)
 
-![Plot 2](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_2.png)
+![Plot 2](/examples/crosscorr_2.png)

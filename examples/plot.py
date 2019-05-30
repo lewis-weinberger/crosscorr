@@ -27,7 +27,7 @@ ax = fig.add_subplot(1,1,1)
 ax.set_xscale('log')
 ax.set_yscale('log')
 
-ax.set_xlabel(r'$k$ [h/cMpc]')
+ax.set_xlabel(r'$k$ [1/units]')
 ax.set_ylabel(r'$P(k)$')
 
 x = k
@@ -37,7 +37,7 @@ ax.plot(x, y, ls='-', c='r', lw=3)
 ax.tick_params(axis='both', which='major', pad=15)
 
 fig.tight_layout()
-plt.savefig("crosscorr_1.pdf", bbox_inches="tight")
+plt.savefig("crosscorr_1.png", bbox_inches="tight")
 
 ################################################################################
 
@@ -48,7 +48,7 @@ ax = fig.add_subplot(1,1,1)
 ax.set_xscale('log')
 ax.set_yscale('log')
 
-ax.set_xlabel(r'$k$ [h/cMpc]')
+ax.set_xlabel(r'$k$ [1/units]')
 ax.set_ylabel(r'$|\Delta^2|(k)$')
 
 x = k
@@ -59,4 +59,4 @@ ax.plot(x, y, ls='-', c='r', lw=3)
 ax.tick_params(axis='both', which='major', pad=15)
 
 fig.tight_layout()
-plt.savefig("crosscorr_2.pdf", bbox_inches="tight")
+plt.savefig("crosscorr_2.png", bbox_inches="tight")

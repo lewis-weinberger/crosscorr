@@ -2,10 +2,9 @@ use std::env;
 use std::process;
 
 use crosscorr;
-use crosscorr::{Config, Output, load_grid, correlate};
+use crosscorr::{correlate, load_grid, Config, Output};
 
 fn main() {
-
     // Load configuration
     let config = Config::new(env::args()).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
@@ -29,11 +28,10 @@ fn main() {
         eprintln!("Error: {}", err);
         process::exit(1);
     });
-    
+
     // Save power spectrum to output file
     output.save_result(&config).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
         process::exit(1);
     });
-
 }
