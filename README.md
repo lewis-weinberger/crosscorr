@@ -1,4 +1,4 @@
-#### crosscorr
+### crosscorr
 [![Build Status](https://travis-ci.com/lewis-weinberger/crosscorr.svg?token=8y51CrY5osH9tmS8LkNZ&branch=master)](https://travis-ci.com/lewis-weinberger/crosscorr)
 
 A power spectrum calculation implemented in Rust, using the [fftw](https://github.com/rust-math/fftw) crate as a 
@@ -39,4 +39,17 @@ cargo run config.ron
 
 where `config.ron` is the configuration file explained above. If you have not
 compiled the executable then this command will compile before running. The
-programm will print to stdout/sterr as it progresses.
+program will print to stdout/sterr as it progresses.
+
+##### Example
+The `examples` directory contains code for generating mock data, `sinusoid.rs`.
+This can be used (note: compile with `cargo build --examples`) to generate a
+mock data cube with 256 cells on a side, and a physical length of 160 [arbitrary
+units]. The data varies accross the cube sinusoidally. Running this example
+will generate both the data and the configuration file so that the `crosscorr`
+code can be tested. Also provided is a plotting script `plot.py`, which will
+generate the following output for this mock data:
+
+![Plot 1](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_1.pdf)
+
+![Plot 2](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_2.pdf)
