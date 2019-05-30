@@ -37,6 +37,10 @@ fn main() -> std::io::Result<()> {
             }
         }
     }
+    println!("Sanity print:");
+    for i in 0..5 {
+        println!("data[{}] = {}", i, data[i]);
+    }
     
     // Write test data to file
     let grid_filename = format!("{}/test_grid.dat", &base);

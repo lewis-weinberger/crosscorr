@@ -159,7 +159,7 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
     println!("Successfully read {} cells!", ngrid3);
     println!("Sanity print:");
     for i in 0..5 {
-        println!("grid1[{}] = {} + i{}", i, grid[i].re, grid[i].im);
+        println!("grid1[{}] = {} + {}i", i, grid[i].re, grid[i].im);
     }
 
     Ok(grid)
@@ -201,8 +201,8 @@ pub fn correlate(config: &Config, mut grid1: AlignedVec<c64>, mut grid2: Aligned
     // Sanity prints
     println!("\nFFTs performed! Sanity check:");
     for n in 0..10 {
-        println!("grid1[{}] = {} + i{}, out1[{}] = {} + i{}", n, grid1[n].re, grid1[n].im, n, out1[n].re, out1[n].im);
-        println!("grid2[{}] = {} + i{}, out2[{}] = {} + i{}", n, grid2[n].re, grid2[n].im, n, out2[n].re, out2[n].im);
+        println!("grid1[{}] = {} + {}i, out1[{}] = {} + {}i", n, grid1[n].re, grid1[n].im, n, out1[n].re, out1[n].im);
+        println!("grid2[{}] = {} + {}i, out2[{}] = {} + {}i", n, grid2[n].re, grid2[n].im, n, out2[n].re, out2[n].im);
     }
 
     // Calculate power spectrum
@@ -215,7 +215,7 @@ pub fn correlate(config: &Config, mut grid1: AlignedVec<c64>, mut grid2: Aligned
         w.push(kf * (i as f64));
     }
     for i in nhalf..ngrid {
-        w.push(kf * ((i - ngrid) as f64));
+        w.push(kf * ((i as isize - ngrid as isize) as f64));
     }
 
     let mut pow_spec: Vec<f64> = vec![0.0; ngrid];
