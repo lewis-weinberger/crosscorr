@@ -50,6 +50,6 @@ will generate both the data and the configuration file so that the `crosscorr`
 code can be tested. Also provided is a plotting script `plot.py`, which will
 generate the following output for this mock data:
 
-![Plot 1](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_1.pdf)
+![Plot 1](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_1.png)
 
-![Plot 2](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_2.pdf)
+![Plot 2](https://github.com/lewis-weinberger/crosscorr/tree/master/examples/crosscorr_2.png)
