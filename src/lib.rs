@@ -152,12 +152,12 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
     let mut buf_reader = BufReader::new(f);
 
     // Read in array from binary file
-    for i in 0..ngrid3 {
+    for elem in grid.iter_mut() {
         let cell = match buf_reader.read_f64::<NativeEndian>() {
             Ok(val) => val,
             Err(_) => return Err("Problem reading values from file!"),
         };
-        grid[i] = c64::new(cell, 0.0);
+        *elem = c64::new(cell, 0.0);
     }
     println!("Successfully read {} cells!", ngrid3);
     println!("Sanity print:");

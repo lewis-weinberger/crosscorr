@@ -47,9 +47,8 @@ fn main() -> std::io::Result<()> {
     let fgrid = File::create(&grid_filename)?;
     let mut buf = BufWriter::new(fgrid);
 
-    let ngrid3 = ngrid * ngrid * ngrid;
-    for i in 0..ngrid3 {
-        buf.write_f64::<NativeEndian>(data[i])?;
+    for val in data.iter() {
+        buf.write_f64::<NativeEndian>(*val)?;
     }
     println!("Created mock data file: {}", &grid_filename);
 
