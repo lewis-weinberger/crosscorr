@@ -3,7 +3,6 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-
 /// Calculate the contrast from mean, delta = (x - mean(x))/mean(x), for a
 /// gridded field
 fn main() -> std::io::Result<()> {
@@ -13,11 +12,11 @@ fn main() -> std::io::Result<()> {
 
     let grid_in = &args[2];
     let grid_out = &args[3];
-    
+
     // Read in original grid
-    let mut data: Vec<f64> = vec![0.0; ngrid*ngrid*ngrid];
+    let mut data: Vec<f64> = vec![0.0; ngrid * ngrid * ngrid];
     read_binary(&grid_in, &mut data)?;
-   
+
     // Sanity prints
     for i in 0..5 {
         println!("data[{}] = {}", i, data[i]);
@@ -25,7 +24,7 @@ fn main() -> std::io::Result<()> {
 
     // Update grid
     update_data(&mut data);
-    
+
     // Sanity prints
     println!("After updating...");
     for i in 0..5 {
@@ -43,7 +42,7 @@ fn read_binary(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<()> {
     _read_binary_f32(filename, grid)
     // _read_binary_f64(filename, grid)
 }
-    
+
 fn _read_binary_f64(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<()> {
     let file = File::open(filename)?;
     println!("opened: {}", filename);
@@ -69,7 +68,7 @@ fn _read_binary_f32(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<(
 
     Ok(())
 }
-    
+
 fn write_binary(filename: &String, grid: Vec<f64>) -> std::io::Result<()> {
     let file = File::create(filename)?;
     println!("opened: {}", filename);
@@ -79,7 +78,7 @@ fn write_binary(filename: &String, grid: Vec<f64>) -> std::io::Result<()> {
         buf.write_f64::<NativeEndian>(*val)?;
     }
     println!("finished writing to file!");
-    
+
     Ok(())
 }
 

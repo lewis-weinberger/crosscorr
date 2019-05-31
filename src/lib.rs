@@ -168,21 +168,19 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
     Ok(grid)
 }
 
-/// Calculates the cross power spectrum of the given 3D grids (note if the same
-/// grid is given twice then this is the auto power spectrum).
+/// Performs FFT on grids
 ///
 /// # Examples
 ///
 /// ```
 /// let output: Output = correlate(&config, grid1, grid2).unwrap();
 /// ```
-pub fn correlate(
+pub fn perform_fft(
     config: &Config,
     mut grid1: AlignedVec<c64>,
     mut grid2: AlignedVec<c64>,
-) -> Result<Output, &'static str> {
+) -> Result<(AlignedVec<c64>, AlignedVec<c64>), &'static str> {
     let ngrid: usize = config.ngrid as usize;
-    let boxsize: f64 = config.boxsize as f64;
 
     // Create FFTW plan
     let shape = [ngrid, ngrid, ngrid];
@@ -210,14 +208,32 @@ pub fn correlate(
     println!("\nFFTs performed! Sanity check:");
     for n in 0..10 {
         println!(
-            "grid1[{}] = {} + {}i, out1[{}] = {} + {}i",
+            "grid1[{}] = {:.3e} + {:.3e}i, out1[{}] = {:.3e} + {:.3e}i",
             n, grid1[n].re, grid1[n].im, n, out1[n].re, out1[n].im
         );
         println!(
-            "grid2[{}] = {} + {}i, out2[{}] = {} + {}i",
+            "grid2[{}] = {:.3e} + {:.3e}i, out2[{}] = {:.3e} + {:.3e}i",
             n, grid2[n].re, grid2[n].im, n, out2[n].re, out2[n].im
         );
     }
+    Ok((out1, out2))
+}
+
+/// Calculates the cross power spectrum of the given 3D grids (note if the same
+/// grid is given twice then this is the auto power spectrum).
+///
+/// # Examples
+///
+/// ```
+/// let output: Output = correlate(&config, grid1, grid2).unwrap();
+/// ```
+pub fn correlate(
+    config: &Config,
+    out1: AlignedVec<c64>,
+    out2: AlignedVec<c64>,
+) -> Result<Output, &'static str> {
+    let ngrid: usize = config.ngrid as usize;
+    let boxsize: f64 = config.boxsize as f64;
 
     // Calculate power spectrum
     let kf: f64 = 2.0 * PI / boxsize;
@@ -225,10 +241,10 @@ pub fn correlate(
     let nhalf: usize = ngrid / 2;
 
     let mut w: Vec<f64> = Vec::with_capacity(ngrid);
-    for i in 0..nhalf {
+    for i in 0..(nhalf + 1) {
         w.push(kf * (i as f64));
     }
-    for i in nhalf..ngrid {
+    for i in (nhalf + 1)..ngrid {
         w.push(kf * ((i as isize - ngrid as isize) as f64));
     }
 
@@ -236,11 +252,11 @@ pub fn correlate(
     let mut iweights: Vec<i64> = vec![0; ngrid];
 
     for i in 0..ngrid {
-        let iper = if i > nhalf { ngrid - i } else { i };
+        let iper = if i >= nhalf { ngrid - i } else { i };
         for j in 0..ngrid {
-            let jper = if j > nhalf { ngrid - j } else { j };
+            let jper = if j >= nhalf { ngrid - j } else { j };
             for k in 0..ngrid {
-                let kper = if k > nhalf { ngrid - k } else { k };
+                let kper = if k >= nhalf { ngrid - k } else { k };
                 let r: f64 = (iper * iper + jper * jper + kper * kper) as f64;
                 let m: usize = (0.5 + r.sqrt()) as usize;
                 iweights[m] += 1;
@@ -250,13 +266,13 @@ pub fn correlate(
                     let scale: usize = (0.5 + (g * coeff).sqrt()) as usize;
                     let index: usize = k + ngrid * (j + ngrid * i);
                     let contrib: Complex<f64> =
-                        out1[index] + out2[index].conj() + out1[index].conj() + out2[index];
+                        out1[index] * out2[index].conj() + out1[index].conj() * out2[index];
                     pow_spec[scale] += contrib.re / 2.0;
                 }
             }
         }
     }
-    println!("Power spectrum calculated. Normalising...");
+    println!("\nPower spectrum calculated. Normalising...");
 
     // Normalise power spectrum
     let pisq: f64 = 2.0 * PI * PI;

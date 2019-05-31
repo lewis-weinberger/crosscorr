@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 use crosscorr;
-use crosscorr::{correlate, load_grid, Config, Output};
+use crosscorr::{correlate, load_grid, perform_fft, Config, Output};
 
 fn main() {
     // Load configuration
@@ -23,8 +23,14 @@ fn main() {
         process::exit(1);
     });
 
+    // Perform FFT
+    let (out1, out2) = perform_fft(&config, grid1, grid2).unwrap_or_else(|err| {
+        eprintln!("Error: {}", err);
+        process::exit(1);
+    });
+
     // Calculate power spectrum
-    let output: Output = correlate(&config, grid1, grid2).unwrap_or_else(|err| {
+    let output: Output = correlate(&config, out1, out2).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
         process::exit(1);
     });
