@@ -13,7 +13,8 @@ fn main() -> std::io::Result<()> {
     println!("Working in base directory: {}", base);
 
     let ngrid = 512;
-    let boxsize = 160;
+    let boxsize = 50;
+    let wavelength = 0.1 * boxsize;
 
     // First generate the config file in RON format
     let config_filename = format!("{}/config.ron", &base);
@@ -32,8 +33,9 @@ fn main() -> std::io::Result<()> {
     for i in 0..ngrid {
         for j in 0..ngrid {
             for k in 0..ngrid {
-                let theta = (i + j + k) as f64 / ngrid as f64;
-                data[k + ngrid * (j + ngrid * i)] = (theta * 4.0 * PI).sin();
+                let theta = (i + j + k) as f64 / (ngrid as f64);
+                theta *= (boxsize / wavelength);
+                data[k + ngrid * (j + ngrid * i)] = (theta * PI / 2.0).sin();
             }
         }
     }

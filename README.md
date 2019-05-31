@@ -44,14 +44,6 @@ compiled the executable then this command will compile before running. The
 program will print to stdout/sterr as it progresses.
 
 ##### Example
-The `examples` directory contains code for generating mock data, `sinusoid.rs`.
-This can be used (note: compile with `cargo build --examples`) to generate a
-mock data cube with 256 cells on a side, and a physical length of 160 [arbitrary
-units]. The data varies accross the cube sinusoidally. Running this example
-will generate both the data and the configuration file so that the `crosscorr`
-code can be tested. Also provided is a plotting script `plot.py`, which will
-generate the following output for this mock data:
-
-![Plot 1](/examples/crosscorr_1.png)
-
-![Plot 2](/examples/crosscorr_2.png)
+The `examples` directory contains code for preparing the data appropriately, 
+`contrast.rs`, as well as for generating mock data, `sinusoid.rs`. There is also
+a simple Python plotting script, `plot.py`.

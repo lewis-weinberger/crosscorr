@@ -21,7 +21,7 @@ print('{} read in'.format(filename))
 
 ################################################################################
 
-fig = plt.figure(figsize=(8,8))
+fig = plt.figure(figsize=(4,4))
 ax = fig.add_subplot(1,1,1)
 
 ax.set_xscale('log')
@@ -42,7 +42,7 @@ plt.savefig("crosscorr_1.png", bbox_inches="tight")
 ################################################################################
 
 
-fig = plt.figure(figsize=(8,8))
+fig = plt.figure(figsize=(4,4))
 ax = fig.add_subplot(1,1,1)
 
 ax.set_xscale('log')
