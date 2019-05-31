@@ -17,9 +17,21 @@ fn main() -> std::io::Result<()> {
     // Read in original grid
     let mut data: Vec<f64> = vec![0.0; ngrid*ngrid*ngrid];
     read_binary(&grid_in, &mut data)?;
-    
+   
+    // Sanity prints
+    for i in 0..5 {
+        println!("data[{}] = {}", i, data[i]);
+    }
+
     // Update grid
     update_data(&mut data);
+    
+    // Sanity prints
+    println!("After updating...");
+    for i in 0..5 {
+        println!("data[{}] = {}", i, data[i]);
+    }
+    let _check: f64 = data_mean(&data);
 
     // Save grid to new file
     write_binary(&grid_out, data)?;
@@ -87,6 +99,7 @@ fn update_data(data: &mut Vec<f64>) {
     let mean_val: f64 = data_mean(data);
 
     for val in data.iter_mut() {
+        *val -= mean_val;
         *val /= mean_val;
     }
 }
