@@ -177,8 +177,8 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
 /// ```
 pub fn perform_fft(
     config: &Config,
-    mut grid1: AlignedVec<c64>,
-    mut grid2: AlignedVec<c64>,
+    grid1: AlignedVec<c64>,
+    grid2: AlignedVec<c64>,
 ) -> Result<(AlignedVec<c64>, AlignedVec<c64>), &'static str> {
     println!("\nPerforming FFTs...");
     let ngrid: usize = config.ngrid as usize;
@@ -194,33 +194,35 @@ pub fn perform_fft(
     // Perform FFT on grids
     let ngrid3 = ngrid * ngrid * ngrid;
 
-    let mut out1 = AlignedVec::new(ngrid3);
-    match plan.c2c(&mut grid1, &mut out1) {
-        Ok(_) => (),
-        Err(_) => return Err("Failed to FFT grid1."),
-    };
+    let out1 = fft_from_plan(ngrid3, grid1, &mut plan)?;
     println!("First grid FFT complete!");
 
-    let mut out2 = AlignedVec::new(ngrid3);
-    match plan.c2c(&mut grid2, &mut out2) {
-        Ok(_) => (),
-        Err(_) => return Err("Failed to FFT grid2."),
-    };
+    let out2 = fft_from_plan(ngrid3, grid2, &mut plan)?;
     println!("Second grid FFT complete!");
 
     // Sanity prints
     println!("FFTs performed... Sanity check:");
     for n in 0..10 {
         println!(
-            "grid1[{}] = {:.3e} + {:.3e}i, out1[{}] = {:.3e} + {:.3e}i",
-            n, grid1[n].re, grid1[n].im, n, out1[n].re, out1[n].im
+            "out1[{}] = {:.3e} + {:.3e}i",
+            n, out1[n].re, out1[n].im
         );
         println!(
-            "grid2[{}] = {:.3e} + {:.3e}i, out2[{}] = {:.3e} + {:.3e}i",
-            n, grid2[n].re, grid2[n].im, n, out2[n].re, out2[n].im
+            "out2[{}] = {:.3e} + {:.3e}i",
+            n, out2[n].re, out2[n].im
         );
     }
     Ok((out1, out2))
+}
+
+/// Use FFTW3 plan to perform FFT
+fn fft_from_plan(ngrid3: usize, mut grid: AlignedVec<c64>, plan: &mut C2CPlan64) -> Result<AlignedVec<c64>, &'static str> {
+    let mut out = AlignedVec::new(ngrid3);
+    match plan.c2c(&mut grid, &mut out) {
+        Ok(_) => (),
+        Err(_) => return Err("Failed to FFT grid."),
+    };
+    Ok(out)
 }
 
 /// Calculates the cross power spectrum of the given 3D grids (note if the same
