@@ -13,7 +13,8 @@ the fftw crate requires a C compiler and `make` to compile the underlying source
 for the library. With those prerequisites, installation should be as simple as
 cloning the repository and using `cargo build --release`. Note compiling the 
 `release` version will take longer but provides considerable optimisation which
-speeds up the code dramatically (in particular the file IO).
+speeds up the code dramatically (in particular the file IO). To deconvolve either
+an NGP or CIC mass-assignment, you can pass the correct flag: `cargo build --release --features=ngp_correction` or `cargo build --release --features=cic_correction`.
 
 ##### Usage
 The executable reads in the configuration from a 

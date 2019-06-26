@@ -153,11 +153,11 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
 
     // Read in array from binary file
     for elem in grid.iter_mut() {
-        let cell = match buf_reader.read_f64::<NativeEndian>() {
+        let cell = match buf_reader.read_f32::<NativeEndian>() {
             Ok(val) => val,
             Err(_) => return Err("Problem reading values from file!"),
         };
-        *elem = c64::new(cell, 0.0);
+        *elem = c64::new(cell as f64, 0.0);
     }
     println!("Successfully read {} cells!", ngrid3);
     println!("Sanity print:");
@@ -180,6 +180,7 @@ pub fn perform_fft(
     mut grid1: AlignedVec<c64>,
     mut grid2: AlignedVec<c64>,
 ) -> Result<(AlignedVec<c64>, AlignedVec<c64>), &'static str> {
+    println!("\nPerforming FFTs...");
     let ngrid: usize = config.ngrid as usize;
 
     // Create FFTW plan
@@ -188,6 +189,7 @@ pub fn perform_fft(
         Ok(p) => p,
         Err(_) => return Err("Unable to create FFTW plan."),
     };
+    println!("Plan created!");
 
     // Perform FFT on grids
     let ngrid3 = ngrid * ngrid * ngrid;
@@ -197,15 +199,17 @@ pub fn perform_fft(
         Ok(_) => (),
         Err(_) => return Err("Failed to FFT grid1."),
     };
+    println!("First grid FFT complete!");
 
     let mut out2 = AlignedVec::new(ngrid3);
     match plan.c2c(&mut grid2, &mut out2) {
         Ok(_) => (),
         Err(_) => return Err("Failed to FFT grid2."),
     };
+    println!("Second grid FFT complete!");
 
     // Sanity prints
-    println!("\nFFTs performed! Sanity check:");
+    println!("FFTs performed... Sanity check:");
     for n in 0..10 {
         println!(
             "grid1[{}] = {:.3e} + {:.3e}i, out1[{}] = {:.3e} + {:.3e}i",
@@ -232,6 +236,14 @@ pub fn correlate(
     out1: AlignedVec<c64>,
     out2: AlignedVec<c64>,
 ) -> Result<Output, &'static str> {
+    println!("\nCalculating power spectrum...");
+
+    if cfg!(feature = "ngp_correction") {
+        println!("Correcting for NGP mass assignment!");
+    } else if cfg!(feature = "cic_correction") {
+        println!("Correcting for CIC mass assignment!");
+    }
+    
     let ngrid: usize = config.ngrid as usize;
     let boxsize: f64 = config.boxsize as f64;
 
@@ -261,18 +273,41 @@ pub fn correlate(
                 let m: usize = (0.5 + r.sqrt()) as usize;
                 iweights[m] += 1;
 
+
                 let g = w[i] * w[i] + w[j] * w[j] + w[k] * w[k];
                 if g != 0.0 {
                     let scale: usize = (0.5 + (g * coeff).sqrt()) as usize;
                     let index: usize = k + ngrid * (j + ngrid * i);
                     let contrib: Complex<f64> =
-                        out1[index] * out2[index].conj() + out1[index].conj() * out2[index];
+                        out1[index] * out2[index].conj() 
+                        + out1[index].conj() * out2[index];
                     pow_spec[scale] += contrib.re / 2.0;
+                
+                    #[cfg(feature = "ngp_correction")] 
+                    {
+                        // Correct for Nearest-Grid-Point mass assignment
+                        let kny: f64 = PI * config.ngrid as f64 / boxsize;
+                        let wngp = sinc(PI * w[i] as f64 / (2.0 * kny))
+                            * sinc(PI * w[j] as f64 / (2.0 * kny))
+                            * sinc(PI * w[k] as f64 / (2.0 * kny));
+                        pow_spec[scale] /= wngp*wngp;
+                    }
+
+                    #[cfg(feature = "cic_correction")] 
+                    {
+                        // Correct for Cloud-in-Cell mass assignment
+                        let kny: f64 = PI * config.ngrid as f64 / boxsize;
+                        let wcic = (sinc(PI * w[i] as f64 / (2.0 * kny))
+                            * sinc(PI * w[j] as f64 / (2.0 * kny))
+                            * sinc(PI * w[k] as f64 / (2.0 * kny)))
+                            .powi(2);
+                        pow_spec[scale] /= wcic*wcic;
+                    }
                 }
             }
         }
     }
-    println!("\nPower spectrum calculated. Normalising...");
+    println!("Power spectrum calculated. Normalising...");
 
     // Normalise power spectrum
     let pisq: f64 = 2.0 * PI * PI;
@@ -291,4 +326,9 @@ pub fn correlate(
         deltasqk,
         iweights,
     })
+}
+
+#[cfg(any(feature = "ngp_correction", feature = "cic_correction"))]
+fn sinc(theta: f64) -> f64 {
+    if theta < 1e-20 { 1.0 } else { (theta.sin() / theta) }
 }

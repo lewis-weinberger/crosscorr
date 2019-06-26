@@ -1,7 +1,6 @@
 use std::env;
 use std::process;
 
-use crosscorr;
 use crosscorr::{correlate, load_grid, perform_fft, Config, Output};
 
 fn main() {

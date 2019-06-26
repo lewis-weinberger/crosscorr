@@ -38,12 +38,12 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn read_binary(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<()> {
+fn read_binary(filename: &str, grid: &mut Vec<f64>) -> std::io::Result<()> {
     _read_binary_f32(filename, grid)
     // _read_binary_f64(filename, grid)
 }
 
-fn _read_binary_f64(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<()> {
+fn _read_binary_f64(filename: &str, grid: &mut Vec<f64>) -> std::io::Result<()> {
     let file = File::open(filename)?;
     println!("opened: {}", filename);
     let mut buf = BufReader::new(file);
@@ -56,7 +56,7 @@ fn _read_binary_f64(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<(
     Ok(())
 }
 
-fn _read_binary_f32(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<()> {
+fn _read_binary_f32(filename: &str, grid: &mut Vec<f64>) -> std::io::Result<()> {
     let file = File::open(filename)?;
     println!("opened: {}", filename);
     let mut buf = BufReader::new(file);
@@ -69,7 +69,7 @@ fn _read_binary_f32(filename: &String, grid: &mut Vec<f64>) -> std::io::Result<(
     Ok(())
 }
 
-fn write_binary(filename: &String, grid: Vec<f64>) -> std::io::Result<()> {
+fn write_binary(filename: &str, grid: Vec<f64>) -> std::io::Result<()> {
     let file = File::create(filename)?;
     println!("opened: {}", filename);
     let mut buf = BufWriter::new(file);
