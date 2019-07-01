@@ -1,9 +1,3 @@
-extern crate byteorder;
-extern crate fftw;
-extern crate num_complex;
-extern crate ron;
-extern crate serde;
-
 use byteorder::{NativeEndian, ReadBytesExt};
 use fftw::array::AlignedVec;
 use fftw::plan::*;
@@ -203,20 +197,18 @@ pub fn perform_fft(
     // Sanity prints
     println!("FFTs performed... Sanity check:");
     for n in 0..10 {
-        println!(
-            "out1[{}] = {:.3e} + {:.3e}i",
-            n, out1[n].re, out1[n].im
-        );
-        println!(
-            "out2[{}] = {:.3e} + {:.3e}i",
-            n, out2[n].re, out2[n].im
-        );
+        println!("out1[{}] = {:.3e} + {:.3e}i", n, out1[n].re, out1[n].im);
+        println!("out2[{}] = {:.3e} + {:.3e}i", n, out2[n].re, out2[n].im);
     }
     Ok((out1, out2))
 }
 
 /// Use FFTW3 plan to perform FFT
-fn fft_from_plan(ngrid3: usize, mut grid: AlignedVec<c64>, plan: &mut C2CPlan64) -> Result<AlignedVec<c64>, &'static str> {
+fn fft_from_plan(
+    ngrid3: usize,
+    mut grid: AlignedVec<c64>,
+    plan: &mut C2CPlan64,
+) -> Result<AlignedVec<c64>, &'static str> {
     let mut out = AlignedVec::new(ngrid3);
     match plan.c2c(&mut grid, &mut out) {
         Ok(_) => (),
@@ -245,7 +237,7 @@ pub fn correlate(
     } else if cfg!(feature = "cic_correction") {
         println!("Correcting for CIC mass assignment!");
     }
-    
+
     let ngrid: usize = config.ngrid as usize;
     let boxsize: f64 = config.boxsize as f64;
 
@@ -275,35 +267,33 @@ pub fn correlate(
                 let m: usize = (0.5 + r.sqrt()) as usize;
                 iweights[m] += 1;
 
-
                 let g = w[i] * w[i] + w[j] * w[j] + w[k] * w[k];
                 if g != 0.0 {
                     let scale: usize = (0.5 + (g * coeff).sqrt()) as usize;
                     let index: usize = k + ngrid * (j + ngrid * i);
                     let contrib: Complex<f64> =
-                        out1[index] * out2[index].conj() 
-                        + out1[index].conj() * out2[index];
+                        out1[index] * out2[index].conj() + out1[index].conj() * out2[index];
                     pow_spec[scale] += contrib.re / 2.0;
-                
-                    #[cfg(feature = "ngp_correction")] 
+
+                    #[cfg(feature = "ngp_correction")]
                     {
                         // Correct for Nearest-Grid-Point mass assignment
                         let kny: f64 = PI * config.ngrid as f64 / boxsize;
                         let wngp = sinc(PI * w[i] as f64 / (2.0 * kny))
                             * sinc(PI * w[j] as f64 / (2.0 * kny))
                             * sinc(PI * w[k] as f64 / (2.0 * kny));
-                        pow_spec[scale] /= wngp*wngp;
+                        pow_spec[scale] /= wngp * wngp;
                     }
 
-                    #[cfg(feature = "cic_correction")] 
+                    #[cfg(feature = "cic_correction")]
                     {
                         // Correct for Cloud-in-Cell mass assignment
                         let kny: f64 = PI * config.ngrid as f64 / boxsize;
                         let wcic = (sinc(PI * w[i] as f64 / (2.0 * kny))
                             * sinc(PI * w[j] as f64 / (2.0 * kny))
                             * sinc(PI * w[k] as f64 / (2.0 * kny)))
-                            .powi(2);
-                        pow_spec[scale] /= wcic*wcic;
+                        .powi(2);
+                        pow_spec[scale] /= wcic * wcic;
                     }
                 }
             }
@@ -332,5 +322,9 @@ pub fn correlate(
 
 #[cfg(any(feature = "ngp_correction", feature = "cic_correction"))]
 fn sinc(theta: f64) -> f64 {
-    if theta < 1e-20 { 1.0 } else { (theta.sin() / theta) }
+    if theta < 1e-20 {
+        1.0
+    } else {
+        (theta.sin() / theta)
+    }
 }
