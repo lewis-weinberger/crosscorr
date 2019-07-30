@@ -7,3 +7,5 @@ logs
 *.sh
 *.py
 *.lock
+*.ron
+*~

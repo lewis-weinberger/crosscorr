@@ -232,10 +232,14 @@ pub fn correlate(
 ) -> Result<Output, &'static str> {
     println!("\nCalculating power spectrum...");
 
-    if cfg!(feature = "ngp_correction") {
-        println!("Correcting for NGP mass assignment!");
-    } else if cfg!(feature = "cic_correction") {
-        println!("Correcting for CIC mass assignment!");
+    if cfg!(feature = "ngp_correction_single") {
+        println!("Correcting for NGP mass assignment of one field!");
+    } else if cfg!(feature = "cic_correction_single") {
+        println!("Correcting for CIC mass assignment of one field!");
+    } else if cfg!(feature = "ngp_correction_both") {
+        println!("Correcting for NGP mass assignment of both fields!");
+    } else if cfg!(feature = "cic_correction_both") {
+        println!("Correcting for CIC mass assignment of both fields!");
     }
 
     let ngrid: usize = config.ngrid as usize;
@@ -245,6 +249,14 @@ pub fn correlate(
     let kf: f64 = 2.0 * PI / boxsize;
     let coeff: f64 = (boxsize / (2.0 * PI)).powf(2.0);
     let nhalf: usize = ngrid / 2;
+
+    #[cfg(any(
+        feature = "ngp_correction_single",
+        feature = "ngp_correction_both",
+        feature = "cic_correction_single",
+        feature = "cic_correction_both"
+    ))]
+    let kny: f64 = PI * config.ngrid as f64 / boxsize;
 
     let mut w: Vec<f64> = Vec::with_capacity(ngrid);
     for i in 0..(nhalf + 1) {
@@ -271,30 +283,48 @@ pub fn correlate(
                 if g != 0.0 {
                     let scale: usize = (0.5 + (g * coeff).sqrt()) as usize;
                     let index: usize = k + ngrid * (j + ngrid * i);
-                    let contrib: Complex<f64> =
+                    let mut contrib: Complex<f64> =
                         out1[index] * out2[index].conj() + out1[index].conj() * out2[index];
-                    pow_spec[scale] += contrib.re / 2.0;
 
-                    #[cfg(feature = "ngp_correction")]
+                    #[cfg(feature = "ngp_correction_single")]
                     {
                         // Correct for Nearest-Grid-Point mass assignment
-                        let kny: f64 = PI * config.ngrid as f64 / boxsize;
                         let wngp = sinc(PI * w[i] as f64 / (2.0 * kny))
                             * sinc(PI * w[j] as f64 / (2.0 * kny))
                             * sinc(PI * w[k] as f64 / (2.0 * kny));
-                        pow_spec[scale] /= wngp * wngp;
+                        contrib.re /= wngp;
                     }
 
-                    #[cfg(feature = "cic_correction")]
+                    #[cfg(feature = "cic_correction_single")]
                     {
                         // Correct for Cloud-in-Cell mass assignment
-                        let kny: f64 = PI * config.ngrid as f64 / boxsize;
                         let wcic = (sinc(PI * w[i] as f64 / (2.0 * kny))
                             * sinc(PI * w[j] as f64 / (2.0 * kny))
                             * sinc(PI * w[k] as f64 / (2.0 * kny)))
                         .powi(2);
-                        pow_spec[scale] /= wcic * wcic;
+                        contrib.re /= wcic;
                     }
+
+                    #[cfg(feature = "ngp_correction_both")]
+                    {
+                        // Correct for Nearest-Grid-Point mass assignment
+                        let wngp = sinc(PI * w[i] as f64 / (2.0 * kny))
+                            * sinc(PI * w[j] as f64 / (2.0 * kny))
+                            * sinc(PI * w[k] as f64 / (2.0 * kny));
+                        contrib.re /= wngp * wngp;
+                    }
+
+                    #[cfg(feature = "cic_correction_both")]
+                    {
+                        // Correct for Cloud-in-Cell mass assignment
+                        let wcic = (sinc(PI * w[i] as f64 / (2.0 * kny))
+                            * sinc(PI * w[j] as f64 / (2.0 * kny))
+                            * sinc(PI * w[k] as f64 / (2.0 * kny)))
+                        .powi(2);
+                        contrib.re /= wcic * wcic;
+                    }
+
+                    pow_spec[scale] += contrib.re / 2.0;
                 }
             }
         }
@@ -306,7 +336,7 @@ pub fn correlate(
     let mut deltasqk: Vec<f64> = Vec::with_capacity(nhalf);
 
     for i in 0..nhalf {
-        pow_spec[i] *= boxsize.powf(3.0) / (ngrid as f64).powf(6.0);
+        pow_spec[i] *= boxsize.powi(3) / (ngrid as f64).powi(6);
         pow_spec[i] /= iweights[i] as f64;
         deltasqk.push(w[i].powf(3.0) * pow_spec[i] / pisq);
     }
@@ -320,7 +350,12 @@ pub fn correlate(
     })
 }
 
-#[cfg(any(feature = "ngp_correction", feature = "cic_correction"))]
+#[cfg(any(
+    feature = "ngp_correction_single",
+    feature = "ngp_correction_both",
+    feature = "cic_correction_single",
+    feature = "cic_correction_both"
+))]
 fn sinc(theta: f64) -> f64 {
     if theta < 1e-20 {
         1.0

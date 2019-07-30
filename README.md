@@ -14,7 +14,7 @@ for the library. With those prerequisites, installation should be as simple as
 cloning the repository and using `cargo build --release`. Note compiling the 
 `release` version will take longer but provides considerable optimisation which
 speeds up the code dramatically (in particular the file IO). To deconvolve either
-an NGP or CIC mass-assignment, you can pass the correct flag: `cargo build --release --features=ngp_correction` or `cargo build --release --features=cic_correction`.
+an NGP or CIC mass-assignment, you can pass the correct flag: `cargo build --release --features=ngp_correction_single` or `cargo build --release --features=cic_correction_single` (substitute `both` for `single` to correct both fields).
 
 ##### Usage
 The executable reads in the configuration from a 
