@@ -46,11 +46,11 @@ where `config.ron` is the configuration file explained above. If you have not co
 #### Window functions
 To deconvolve either a nearest-grid-point (NGP) or cloud-in-cell (CIC) mass-assignment for one of the fields, you can pass a feature flag:
 
-    cargo build --release --features=ngp_correction_single
+    $ cargo build --release --features=ngp_correction_single
 
 or
 
-    cargo build --release --features=cic_correction_single
+    $ cargo build --release --features=cic_correction_single
 
 (substitute `both` for `single` if you want to correct both fields).
 
