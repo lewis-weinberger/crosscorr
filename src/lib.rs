@@ -99,16 +99,27 @@ impl Output {
             Ok(file) => file,
             Err(_) => return Err("Unable to open output file!"),
         };
-        write!(f, "# w pow_spec deltasqk iweights\n").unwrap();
+        match writeln!(f, "# w pow_spec deltasqk iweights") {
+            Ok(_) => (),
+            Err(err) => {
+                eprintln!("{}", err);
+                return Err("Unable to save output!")
+            },
+        }
 
         let nhalf: usize = (config.ngrid / 2) as usize;
         for n in 0..nhalf {
-            write!(
+            match writeln!(
                 f,
-                "{} {} {} {}\n",
+                "{} {} {} {}",
                 self.w[n], self.pow_spec[n], self.deltasqk[n], self.iweights[n]
-            )
-            .unwrap();
+            ) {
+                Ok(_) => (),
+                Err(err) => {
+                    eprintln!("{}", err);
+                    return Err("Unable to save output!")
+                },
+            }
         }
 
         Ok(())
@@ -151,13 +162,15 @@ pub fn load_grid(config: &Config, num: usize) -> Result<AlignedVec<c64>, &'stati
             Ok(val) => val,
             Err(_) => return Err("Problem reading values from file!"),
         };
-        *elem = c64::new(cell as f64, 0.0);
+        *elem = c64::new(f64::from(cell), 0.0);
     }
     println!("Successfully read {} cells!", ngrid3);
     println!("Sanity print:");
-    for i in 0..5 {
-        println!("grid1[{}] = {} + {}i", i, grid[i].re, grid[i].im);
-    }
+    grid[0..5].iter()
+        .enumerate()
+        .for_each(|(i, elem)| {
+        println!("grid1[{}] = {:.3e} + {:.3e}i", i, elem.re, elem.im);
+    });
 
     Ok(grid)
 }
@@ -243,7 +256,7 @@ pub fn correlate(
     }
 
     let ngrid: usize = config.ngrid as usize;
-    let boxsize: f64 = config.boxsize as f64;
+    let boxsize: f64 = f64::from(config.boxsize);
 
     // Calculate power spectrum
     let kf: f64 = 2.0 * PI / boxsize;
@@ -259,7 +272,7 @@ pub fn correlate(
     let kny: f64 = PI * config.ngrid as f64 / boxsize;
 
     let mut w: Vec<f64> = Vec::with_capacity(ngrid);
-    for i in 0..(nhalf + 1) {
+    for i in 0..=nhalf {
         w.push(kf * (i as f64));
     }
     for i in (nhalf + 1)..ngrid {
